@@ -1,0 +1,92 @@
+aid: oracle-netsuite
+name: Oracle NetSuite
+description: >-
+  Oracle NetSuite is a cloud-based ERP suite covering financials, accounting,
+  order management, inventory, CRM, ecommerce, HR, and professional services
+  automation for businesses of all sizes worldwide. As Oracle's flagship SaaS
+  ERP, NetSuite powers core back-office operations and global subsidiaries.
+  Oracle NetSuite exposes its SuiteTalk REST Web Services API for record
+  access and SuiteQL queries, secured via OAuth 2.0 issued by each customer
+  account-specific suitetalk.api.netsuite.com endpoint.
+type: Index
+image: https://kinlane-productions.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+tags:
+  - ERP
+  - Financials
+  - Accounting
+  - CRM
+  - Inventory
+  - SaaS
+  - Oracle
+url: >-
+  https://raw.githubusercontent.com/api-evangelist/oracle-netsuite/refs/heads/main/apis.yml
+created: '2026-05-11'
+modified: '2026-05-11'
+specificationVersion: '0.19'
+apis:
+  - aid: oracle-netsuite:suitetalk-rest-record-api
+    name: Oracle NetSuite SuiteTalk REST Record API
+    description: >-
+      REST Web Services API for creating, reading, updating, and deleting
+      NetSuite records such as customers, vendors, sales orders, invoices,
+      items, and journal entries. Authentication uses OAuth 2.0 (auth code,
+      M2M client credentials, or token-based auth) against the account's
+      suitetalk.api.netsuite.com endpoint.
+    humanURL: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html
+    baseURL: https://{accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
+    tags:
+      - ERP
+      - Records
+      - Customers
+      - Invoices
+      - Sales Orders
+      - OAuth 2.0
+    properties:
+      - type: Documentation
+        url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html
+      - type: OAuth 2.0
+        url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_157780312610.html
+      - type: Authentication Overview
+        url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_4369651411.html
+  - aid: oracle-netsuite:suiteql-query-api
+    name: Oracle NetSuite SuiteQL Query API
+    description: >-
+      REST endpoint for executing SuiteQL (SQL-like) queries against NetSuite
+      records and transactions for reporting and integration use cases.
+      Returns paginated JSON results and uses the same OAuth 2.0 flows as
+      the Record API.
+    humanURL: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html
+    baseURL: https://{accountId}.suitetalk.api.netsuite.com/services/rest/query/v1/suiteql
+    tags:
+      - SuiteQL
+      - Query
+      - Reporting
+      - Analytics
+    properties:
+      - type: Documentation
+        url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html
+
+common:
+  - type: Website
+    url: https://www.netsuite.com
+  - type: Oracle NetSuite Site
+    url: https://www.oracle.com/netsuite/
+  - type: Documentation
+    url: https://docs.oracle.com/en/cloud/saas/netsuite/index.html
+  - type: SuiteTalk Guide
+    url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html
+  - type: Pricing
+    url: https://www.netsuite.com/portal/products/erp/pricing.shtml
+  - type: Sign Up
+    url: https://www.netsuite.com/portal/forms/contact-netsuite.shtml
+  - type: Login
+    url: https://system.netsuite.com/pages/customerlogin.jsp
+  - type: Support
+    url: https://www.netsuite.com/portal/services/customer-support.shtml
+  - type: SuiteAnswers
+    url: https://netsuite.custhelp.com
+  - type: Developer Resources
+    url: https://www.netsuite.com/portal/developers.shtml
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com
