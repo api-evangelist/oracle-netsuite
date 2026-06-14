@@ -1,0 +1,1235 @@
+"""
+Oracle NetSuite ERP - Conceptual GraphQL Schema
+Derived from SuiteTalk REST Web Services API
+Source: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/
+"""
+
+scalar DateTime
+scalar Date
+scalar Decimal
+
+# ─────────────────────────────────────────────
+# General Ledger / Financials
+# ─────────────────────────────────────────────
+
+"""Chart-of-accounts record in NetSuite."""
+type Account {
+  id: ID!
+  acctNumber: String
+  acctName: String!
+  acctType: AccountType
+  description: String
+  currency: CurrencyDetail
+  subsidiary: SubsidiaryDetail
+  parent: Account
+  isInactive: Boolean
+  openingBalance: Decimal
+  lastModifiedDate: DateTime
+}
+
+"""Classification of a chart-of-accounts entry (asset, liability, income, etc.)."""
+type AccountType {
+  id: ID!
+  name: String!
+  longname: String
+}
+
+"""A fiscal accounting period defined in NetSuite."""
+type AccountingPeriod {
+  id: ID!
+  periodName: String!
+  startDate: Date
+  endDate: Date
+  isYear: Boolean
+  isQuarter: Boolean
+  closed: Boolean
+  parent: AccountingPeriod
+}
+
+"""A NetSuite subsidiary (legal entity or business unit)."""
+type SubsidiaryDetail {
+  id: ID!
+  name: String!
+  legalName: String
+  country: String
+  currency: CurrencyDetail
+  isElimination: Boolean
+  parent: SubsidiaryDetail
+}
+
+"""Currency definition used across financial records."""
+type CurrencyDetail {
+  id: ID!
+  symbol: String!
+  name: String!
+  exchangeRate: Decimal
+  isBaseCurrency: Boolean
+}
+
+"""A general ledger journal entry."""
+type JournalEntry {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  postingPeriod: AccountingPeriod
+  memo: String
+  subsidiary: SubsidiaryDetail
+  currency: CurrencyDetail
+  exchangeRate: Decimal
+  lines: [JournalLine!]
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A single debit or credit line within a journal entry."""
+type JournalLine {
+  id: ID!
+  lineNumber: Int
+  account: Account
+  debit: Decimal
+  credit: Decimal
+  memo: String
+  department: Department
+  location: LocationDetail
+  class: ClassDetail
+  entity: Customer
+}
+
+"""A general ledger budget for planning and variance analysis."""
+type GLBudget {
+  id: ID!
+  name: String!
+  budgetType: String
+  year: AccountingPeriod
+  subsidiary: SubsidiaryDetail
+  account: Account
+  amount: Decimal
+  department: Department
+  location: LocationDetail
+  class: ClassDetail
+}
+
+"""GL forecast record used in financial projections."""
+type GLForecast {
+  id: ID!
+  name: String!
+  period: AccountingPeriod
+  account: Account
+  forecastAmount: Decimal
+  actualAmount: Decimal
+  variance: Decimal
+  subsidiary: SubsidiaryDetail
+}
+
+# ─────────────────────────────────────────────
+# Customers
+# ─────────────────────────────────────────────
+
+"""A NetSuite customer record."""
+type Customer {
+  id: ID!
+  entityId: String!
+  companyName: String
+  firstName: String
+  lastName: String
+  email: String
+  phone: String
+  subsidiary: SubsidiaryDetail
+  currency: CurrencyDetail
+  terms: VendorTerm
+  status: CustomerStatus
+  billingAddress: CustomerBilling
+  shippingAddress: CustomerShipping
+  salesRep: Employee
+  isInactive: Boolean
+  creditLimit: Decimal
+  balance: Decimal
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""Billing address details for a customer."""
+type CustomerBilling {
+  id: ID!
+  addr1: String
+  addr2: String
+  city: String
+  state: String
+  zip: String
+  country: String
+  attention: String
+}
+
+"""Shipping address details for a customer."""
+type CustomerShipping {
+  id: ID!
+  addr1: String
+  addr2: String
+  city: String
+  state: String
+  zip: String
+  country: String
+  attention: String
+  isDefault: Boolean
+}
+
+"""A customer lifecycle status (e.g., Lead, Prospect, Customer)."""
+type CustomerStatus {
+  id: ID!
+  name: String!
+  probability: Decimal
+  description: String
+}
+
+# ─────────────────────────────────────────────
+# Vendors
+# ─────────────────────────────────────────────
+
+"""A NetSuite vendor record."""
+type Vendor {
+  id: ID!
+  entityId: String!
+  companyName: String
+  email: String
+  phone: String
+  subsidiary: SubsidiaryDetail
+  currency: CurrencyDetail
+  terms: VendorTerm
+  billingAddress: VendorBilling
+  is1099Eligible: Boolean
+  isInactive: Boolean
+  openBalance: Decimal
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""Billing address and payment details for a vendor."""
+type VendorBilling {
+  id: ID!
+  addr1: String
+  addr2: String
+  city: String
+  state: String
+  zip: String
+  country: String
+}
+
+"""Payment terms associated with a vendor (e.g., Net 30, 2/10 Net 30)."""
+type VendorTerm {
+  id: ID!
+  name: String!
+  daysUntilNetDue: Int
+  discountPercent: Decimal
+  daysUntilExpiry: Int
+}
+
+# ─────────────────────────────────────────────
+# Employees / HR
+# ─────────────────────────────────────────────
+
+"""An employee record in NetSuite."""
+type Employee {
+  id: ID!
+  entityId: String!
+  firstName: String!
+  lastName: String!
+  email: String
+  phone: String
+  department: Department
+  location: LocationDetail
+  subsidiary: SubsidiaryDetail
+  supervisor: Employee
+  payroll: EmployeePayroll
+  role: Role
+  isInactive: Boolean
+  hireDate: Date
+  releaseDate: Date
+  lastModifiedDate: DateTime
+}
+
+"""Payroll details attached to an employee record."""
+type EmployeePayroll {
+  id: ID!
+  employeeId: ID!
+  payFrequency: String
+  baseWage: Decimal
+  wageType: String
+  paySchedule: String
+  directDepositEnabled: Boolean
+}
+
+"""An organizational department (cost center) in NetSuite."""
+type Department {
+  id: ID!
+  name: String!
+  fullName: String
+  parent: Department
+  isInactive: Boolean
+  subsidiary: SubsidiaryDetail
+}
+
+"""A physical or logical location (warehouse, office, store)."""
+type LocationDetail {
+  id: ID!
+  name: String!
+  fullName: String
+  subsidiary: SubsidiaryDetail
+  address: String
+  isInactive: Boolean
+}
+
+"""A classification (business segment or product line) in NetSuite."""
+type ClassDetail {
+  id: ID!
+  name: String!
+  fullName: String
+  parent: ClassDetail
+  isInactive: Boolean
+  subsidiary: SubsidiaryDetail
+}
+
+# ─────────────────────────────────────────────
+# Transactions – Sales
+# ─────────────────────────────────────────────
+
+"""A customer invoice (accounts receivable billing document)."""
+type Invoice {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  entity: Customer
+  subsidiary: SubsidiaryDetail
+  currency: CurrencyDetail
+  exchangeRate: Decimal
+  terms: VendorTerm
+  dueDate: Date
+  memo: String
+  amountTotal: Decimal
+  amountRemaining: Decimal
+  status: String
+  lines: [InvoiceLine!]
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A line item on an invoice."""
+type InvoiceLine {
+  id: ID!
+  lineNumber: Int
+  item: InventoryItem
+  quantity: Decimal
+  rate: Decimal
+  amount: Decimal
+  description: String
+  taxCode: String
+  department: Department
+  location: LocationDetail
+  class: ClassDetail
+}
+
+"""A sales order placed by a customer."""
+type SalesOrder {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  entity: Customer
+  subsidiary: SubsidiaryDetail
+  currency: CurrencyDetail
+  exchangeRate: Decimal
+  terms: VendorTerm
+  shipDate: Date
+  status: String
+  memo: String
+  amountTotal: Decimal
+  lines: [SalesOrderLine!]
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A line item on a sales order."""
+type SalesOrderLine {
+  id: ID!
+  lineNumber: Int
+  item: InventoryItem
+  quantity: Decimal
+  quantityFulfilled: Decimal
+  rate: Decimal
+  amount: Decimal
+  description: String
+  commitInventory: Boolean
+  location: LocationDetail
+}
+
+"""A credit memo applied against a customer's account."""
+type CreditMemo {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  entity: Customer
+  subsidiary: SubsidiaryDetail
+  currency: CurrencyDetail
+  memo: String
+  amountTotal: Decimal
+  amountRemaining: Decimal
+  lines: [CreditLine!]
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A line item on a credit memo."""
+type CreditLine {
+  id: ID!
+  lineNumber: Int
+  item: InventoryItem
+  quantity: Decimal
+  rate: Decimal
+  amount: Decimal
+  description: String
+}
+
+# ─────────────────────────────────────────────
+# Transactions – Purchasing
+# ─────────────────────────────────────────────
+
+"""A vendor bill (accounts payable invoice)."""
+type Bill {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  entity: Vendor
+  subsidiary: SubsidiaryDetail
+  currency: CurrencyDetail
+  exchangeRate: Decimal
+  terms: VendorTerm
+  dueDate: Date
+  memo: String
+  amountTotal: Decimal
+  amountRemaining: Decimal
+  status: String
+  lines: [BillLine!]
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A line item on a vendor bill."""
+type BillLine {
+  id: ID!
+  lineNumber: Int
+  item: InventoryItem
+  account: Account
+  quantity: Decimal
+  rate: Decimal
+  amount: Decimal
+  description: String
+  department: Department
+  location: LocationDetail
+  class: ClassDetail
+}
+
+"""A purchase order sent to a vendor."""
+type PurchaseOrder {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  entity: Vendor
+  subsidiary: SubsidiaryDetail
+  currency: CurrencyDetail
+  exchangeRate: Decimal
+  terms: VendorTerm
+  expectedCloseDate: Date
+  status: String
+  memo: String
+  amountTotal: Decimal
+  lines: [POLine!]
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A line item on a purchase order."""
+type POLine {
+  id: ID!
+  lineNumber: Int
+  item: InventoryItem
+  quantity: Decimal
+  quantityBilled: Decimal
+  quantityReceived: Decimal
+  rate: Decimal
+  amount: Decimal
+  description: String
+  location: LocationDetail
+  expectedReceiptDate: Date
+}
+
+# ─────────────────────────────────────────────
+# Payments
+# ─────────────────────────────────────────────
+
+"""A generic payment record."""
+type Payment {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  amount: Decimal
+  currency: CurrencyDetail
+  memo: String
+  paymentMethod: String
+  account: Account
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A payment received from a customer against an open invoice."""
+type CustomerPayment {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  entity: Customer
+  payment: Decimal
+  currency: CurrencyDetail
+  exchangeRate: Decimal
+  depositAccount: Account
+  memo: String
+  appliedToInvoice: Invoice
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A payment issued to a vendor against an open bill."""
+type VendorPayment {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  entity: Vendor
+  amount: Decimal
+  currency: CurrencyDetail
+  exchangeRate: Decimal
+  account: Account
+  memo: String
+  appliedToBill: Bill
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A check payment record in NetSuite."""
+type Check {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  entity: Vendor
+  account: Account
+  amount: Decimal
+  currency: CurrencyDetail
+  memo: String
+  checkNumber: String
+  status: String
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+# ─────────────────────────────────────────────
+# Inventory & Items
+# ─────────────────────────────────────────────
+
+"""A stocked, tracked inventory item."""
+type InventoryItem {
+  id: ID!
+  itemId: String!
+  displayName: String
+  description: String
+  itemType: String
+  baseUnit: String
+  subsidiary: [SubsidiaryDetail!]
+  locations: [ItemLocation!]
+  pricing: [ItemPrice!]
+  bom: ItemBOM
+  isInactive: Boolean
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A group of items sold or purchased together as a bundle."""
+type ItemGroup {
+  id: ID!
+  itemId: String!
+  displayName: String
+  description: String
+  memberItems: [InventoryItem!]
+  isInactive: Boolean
+}
+
+"""A manufactured assembly item composed of component items."""
+type AssemblyItem {
+  id: ID!
+  itemId: String!
+  displayName: String
+  description: String
+  bom: BOM
+  locations: [ItemLocation!]
+  isInactive: Boolean
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A service item (non-physical, billable service)."""
+type ServiceItem {
+  id: ID!
+  itemId: String!
+  displayName: String
+  description: String
+  incomeAccount: Account
+  rate: Decimal
+  isInactive: Boolean
+}
+
+"""A non-inventory item used for expenses or resale without stock tracking."""
+type NonInventoryItem {
+  id: ID!
+  itemId: String!
+  displayName: String
+  description: String
+  purchaseAccount: Account
+  saleAccount: Account
+  rate: Decimal
+  isInactive: Boolean
+}
+
+"""Quantity and bin information for an item at a specific location."""
+type ItemLocation {
+  id: ID!
+  location: LocationDetail!
+  quantityOnHand: Decimal
+  quantityOnOrder: Decimal
+  quantityCommitted: Decimal
+  reorderPoint: Decimal
+  preferredStockLevel: Decimal
+}
+
+"""A price tier or price schedule for an item."""
+type ItemPrice {
+  id: ID!
+  priceLevel: String!
+  currency: CurrencyDetail
+  quantity: Decimal
+  price: Decimal
+}
+
+"""The bill-of-materials assignment for an item (pointer to a BOM)."""
+type ItemBOM {
+  id: ID!
+  item: InventoryItem
+  bom: BOM
+  revision: String
+  isDefault: Boolean
+}
+
+"""A bill-of-materials (BOM) defining the components of an assembly."""
+type BOM {
+  id: ID!
+  name: String!
+  description: String
+  isDefault: Boolean
+  components: [WorkOrderItem!]
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+# ─────────────────────────────────────────────
+# Manufacturing
+# ─────────────────────────────────────────────
+
+"""A manufacturing work order to produce an assembled item."""
+type WorkOrder {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  assemblyItem: AssemblyItem
+  quantity: Decimal
+  quantityBuilt: Decimal
+  startDate: Date
+  endDate: Date
+  status: String
+  location: LocationDetail
+  bom: BOM
+  components: [WorkOrderItem!]
+  memo: String
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A component item on a work order or BOM."""
+type WorkOrderItem {
+  id: ID!
+  item: InventoryItem!
+  quantity: Decimal
+  unit: String
+  description: String
+  scrapQuantity: Decimal
+}
+
+# ─────────────────────────────────────────────
+# Shared Transaction
+# ─────────────────────────────────────────────
+
+"""A generic transaction line applicable across NetSuite transaction types."""
+type TransactionLine {
+  id: ID!
+  transaction: ID
+  transactionType: String
+  lineNumber: Int
+  account: Account
+  amount: Decimal
+  debit: Decimal
+  credit: Decimal
+  department: Department
+  location: LocationDetail
+  class: ClassDetail
+  memo: String
+}
+
+# ─────────────────────────────────────────────
+# Expenses
+# ─────────────────────────────────────────────
+
+"""A single expense line item."""
+type Expense {
+  id: ID!
+  account: Account
+  amount: Decimal
+  currency: CurrencyDetail
+  memo: String
+  department: Department
+  location: LocationDetail
+  class: ClassDetail
+  category: String
+  isBillable: Boolean
+  customer: Customer
+}
+
+"""An employee expense report submitted for reimbursement."""
+type ExpenseReport {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  employee: Employee
+  status: String
+  total: Decimal
+  memo: String
+  lines: [Expense!]
+  dueDate: Date
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+# ─────────────────────────────────────────────
+# Projects / Time
+# ─────────────────────────────────────────────
+
+"""A NetSuite project (job) record."""
+type Project {
+  id: ID!
+  entityId: String!
+  companyName: String
+  customer: Customer
+  status: String
+  startDate: Date
+  endDate: Date
+  estimatedCost: Decimal
+  estimatedRevenue: Decimal
+  budget: ProjectBudget
+  resources: [Resource!]
+  timeEntries: [TimeEntry!]
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A budget allocated to a project."""
+type ProjectBudget {
+  id: ID!
+  project: Project
+  amount: Decimal
+  period: AccountingPeriod
+  costBudget: Decimal
+  revenueBudget: Decimal
+}
+
+"""A resource (employee or generic) assigned to a project."""
+type Resource {
+  id: ID!
+  employee: Employee
+  project: Project
+  role: Role
+  allocatedHours: Decimal
+  billingRate: Decimal
+}
+
+"""A time entry logged by an employee against a project or task."""
+type TimeEntry {
+  id: ID!
+  employee: Employee
+  project: Project
+  customer: Customer
+  date: Date
+  hours: Decimal
+  memo: String
+  isBillable: Boolean
+  billingRate: Decimal
+  amount: Decimal
+  class: ClassDetail
+  department: Department
+  lastModifiedDate: DateTime
+}
+
+# ─────────────────────────────────────────────
+# Fulfillment & Receipts
+# ─────────────────────────────────────────────
+
+"""An individual ship item detail on a fulfillment."""
+type ShipItem {
+  id: ID!
+  item: InventoryItem
+  quantity: Decimal
+  serialNumbers: [String!]
+  lotNumber: String
+}
+
+"""An item fulfillment record shipping goods to a customer."""
+type ItemFulfillment {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  salesOrder: SalesOrder
+  entity: Customer
+  shipDate: Date
+  shipMethod: String
+  trackingNumber: String
+  status: String
+  location: LocationDetail
+  items: [ShipItem!]
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""An item receipt record for goods received from a vendor."""
+type ItemReceipt {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  purchaseOrder: PurchaseOrder
+  entity: Vendor
+  location: LocationDetail
+  memo: String
+  status: String
+  items: [ShipItem!]
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+# ─────────────────────────────────────────────
+# Transfers
+# ─────────────────────────────────────────────
+
+"""An inventory transfer moving stock between locations."""
+type InventoryTransfer {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  fromLocation: LocationDetail
+  toLocation: LocationDetail
+  memo: String
+  status: String
+  items: [ShipItem!]
+  subsidiary: SubsidiaryDetail
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A transfer order initiating an inter-location inventory move."""
+type TransferOrder {
+  id: ID!
+  tranId: String
+  tranDate: Date
+  fromLocation: LocationDetail
+  toLocation: LocationDetail
+  expectedReceiptDate: Date
+  status: String
+  memo: String
+  items: [ShipItem!]
+  subsidiary: SubsidiaryDetail
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+# ─────────────────────────────────────────────
+# Access Control
+# ─────────────────────────────────────────────
+
+"""A NetSuite role controlling record-level access."""
+type Role {
+  id: ID!
+  name: String!
+  isCustomRole: Boolean
+  subsidiary: SubsidiaryDetail
+  permissions: [Permission!]
+  isInactive: Boolean
+}
+
+"""A specific permission granted within a role."""
+type Permission {
+  id: ID!
+  permissionId: String!
+  name: String
+  level: String
+  category: String
+}
+
+# ─────────────────────────────────────────────
+# Scripting / Automation (SuiteScript)
+# ─────────────────────────────────────────────
+
+"""A SuiteScript script file deployed in NetSuite."""
+type Script {
+  id: ID!
+  name: String!
+  scriptType: String
+  scriptFile: String
+  description: String
+  notifyOwner: Boolean
+  isInactive: Boolean
+  createdDate: DateTime
+  lastModifiedDate: DateTime
+}
+
+"""A deployment instance of a SuiteScript script."""
+type ScriptDeployment {
+  id: ID!
+  script: Script
+  status: String
+  deployedTo: String
+  executionContext: [String!]
+  loglevel: String
+  isDeployed: Boolean
+  lastExecutionDate: DateTime
+}
+
+# ─────────────────────────────────────────────
+# Security / Sessions
+# ─────────────────────────────────────────────
+
+"""An OAuth 2.0 API key / client credential set for integration access."""
+type APIKey {
+  id: ID!
+  name: String!
+  clientId: String
+  scopes: [String!]
+  createdDate: DateTime
+  expiresAt: DateTime
+  isActive: Boolean
+}
+
+"""An OAuth 2.0 or TBA token issued to an integration or user."""
+type Token {
+  id: ID!
+  tokenName: String!
+  employee: Employee
+  role: Role
+  application: String
+  createdDate: DateTime
+  lastUsedDate: DateTime
+  isActive: Boolean
+}
+
+"""An active user session in the NetSuite UI or API."""
+type Session {
+  id: ID!
+  user: Employee
+  role: Role
+  loginTime: DateTime
+  lastActivityTime: DateTime
+  ipAddress: String
+  isActive: Boolean
+}
+
+# ─────────────────────────────────────────────
+# Pagination
+# ─────────────────────────────────────────────
+
+"""Pagination metadata returned with list queries."""
+type PageInfo {
+  totalCount: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  offset: Int!
+  limit: Int!
+}
+
+"""Generic result wrapper for SuiteQL queries."""
+type SuiteQLResult {
+  items: [String!]
+  count: Int
+  hasMore: Boolean
+  offset: Int
+  totalResults: Int
+}
+
+# ─────────────────────────────────────────────
+# Root Types
+# ─────────────────────────────────────────────
+
+type Query {
+  # General Ledger
+  account(id: ID!): Account
+  accounts(offset: Int, limit: Int, isInactive: Boolean): [Account!]
+
+  accountingPeriod(id: ID!): AccountingPeriod
+  accountingPeriods(offset: Int, limit: Int): [AccountingPeriod!]
+
+  subsidiaryDetail(id: ID!): SubsidiaryDetail
+  subsidiaryDetails(offset: Int, limit: Int): [SubsidiaryDetail!]
+
+  currencyDetail(id: ID!): CurrencyDetail
+  currencyDetails: [CurrencyDetail!]
+
+  journalEntry(id: ID!): JournalEntry
+  journalEntries(offset: Int, limit: Int, postingPeriodId: ID): [JournalEntry!]
+
+  glBudget(id: ID!): GLBudget
+  glBudgets(offset: Int, limit: Int, subsidiaryId: ID): [GLBudget!]
+
+  glForecast(id: ID!): GLForecast
+  glForecasts(offset: Int, limit: Int): [GLForecast!]
+
+  # Customers
+  customer(id: ID!): Customer
+  customers(offset: Int, limit: Int, isInactive: Boolean): [Customer!]
+
+  # Vendors
+  vendor(id: ID!): Vendor
+  vendors(offset: Int, limit: Int, isInactive: Boolean): [Vendor!]
+
+  vendorTerm(id: ID!): VendorTerm
+  vendorTerms: [VendorTerm!]
+
+  # Employees
+  employee(id: ID!): Employee
+  employees(offset: Int, limit: Int, departmentId: ID, isInactive: Boolean): [Employee!]
+
+  department(id: ID!): Department
+  departments(offset: Int, limit: Int): [Department!]
+
+  locationDetail(id: ID!): LocationDetail
+  locationDetails(offset: Int, limit: Int): [LocationDetail!]
+
+  classDetail(id: ID!): ClassDetail
+  classDetails(offset: Int, limit: Int): [ClassDetail!]
+
+  # Transactions
+  invoice(id: ID!): Invoice
+  invoices(offset: Int, limit: Int, customerId: ID, status: String): [Invoice!]
+
+  salesOrder(id: ID!): SalesOrder
+  salesOrders(offset: Int, limit: Int, customerId: ID, status: String): [SalesOrder!]
+
+  creditMemo(id: ID!): CreditMemo
+  creditMemos(offset: Int, limit: Int, customerId: ID): [CreditMemo!]
+
+  bill(id: ID!): Bill
+  bills(offset: Int, limit: Int, vendorId: ID, status: String): [Bill!]
+
+  purchaseOrder(id: ID!): PurchaseOrder
+  purchaseOrders(offset: Int, limit: Int, vendorId: ID, status: String): [PurchaseOrder!]
+
+  # Payments
+  customerPayment(id: ID!): CustomerPayment
+  customerPayments(offset: Int, limit: Int, customerId: ID): [CustomerPayment!]
+
+  vendorPayment(id: ID!): VendorPayment
+  vendorPayments(offset: Int, limit: Int, vendorId: ID): [VendorPayment!]
+
+  check(id: ID!): Check
+  checks(offset: Int, limit: Int): [Check!]
+
+  # Inventory / Items
+  inventoryItem(id: ID!): InventoryItem
+  inventoryItems(offset: Int, limit: Int, isInactive: Boolean): [InventoryItem!]
+
+  assemblyItem(id: ID!): AssemblyItem
+  assemblyItems(offset: Int, limit: Int): [AssemblyItem!]
+
+  serviceItem(id: ID!): ServiceItem
+  serviceItems(offset: Int, limit: Int): [ServiceItem!]
+
+  nonInventoryItem(id: ID!): NonInventoryItem
+  nonInventoryItems(offset: Int, limit: Int): [NonInventoryItem!]
+
+  bom(id: ID!): BOM
+  boms(offset: Int, limit: Int): [BOM!]
+
+  # Manufacturing
+  workOrder(id: ID!): WorkOrder
+  workOrders(offset: Int, limit: Int, status: String): [WorkOrder!]
+
+  # Expenses
+  expenseReport(id: ID!): ExpenseReport
+  expenseReports(offset: Int, limit: Int, employeeId: ID, status: String): [ExpenseReport!]
+
+  # Projects / Time
+  project(id: ID!): Project
+  projects(offset: Int, limit: Int, customerId: ID): [Project!]
+
+  timeEntry(id: ID!): TimeEntry
+  timeEntries(offset: Int, limit: Int, employeeId: ID, projectId: ID): [TimeEntry!]
+
+  # Fulfillment / Receipts
+  itemFulfillment(id: ID!): ItemFulfillment
+  itemFulfillments(offset: Int, limit: Int, salesOrderId: ID): [ItemFulfillment!]
+
+  itemReceipt(id: ID!): ItemReceipt
+  itemReceipts(offset: Int, limit: Int, purchaseOrderId: ID): [ItemReceipt!]
+
+  # Transfers
+  inventoryTransfer(id: ID!): InventoryTransfer
+  inventoryTransfers(offset: Int, limit: Int): [InventoryTransfer!]
+
+  transferOrder(id: ID!): TransferOrder
+  transferOrders(offset: Int, limit: Int, status: String): [TransferOrder!]
+
+  # Access / Scripting
+  role(id: ID!): Role
+  roles(offset: Int, limit: Int): [Role!]
+
+  script(id: ID!): Script
+  scripts(offset: Int, limit: Int, scriptType: String): [Script!]
+
+  scriptDeployment(id: ID!): ScriptDeployment
+  scriptDeployments(offset: Int, limit: Int, scriptId: ID): [ScriptDeployment!]
+
+  # Sessions / Security
+  apiKey(id: ID!): APIKey
+  apiKeys(offset: Int, limit: Int): [APIKey!]
+
+  token(id: ID!): Token
+  tokens(offset: Int, limit: Int, employeeId: ID): [Token!]
+
+  session(id: ID!): Session
+  activeSessions: [Session!]
+
+  # SuiteQL ad-hoc query
+  suiteQL(query: String!, offset: Int, limit: Int): SuiteQLResult
+}
+
+input AccountInput {
+  acctNumber: String
+  acctName: String!
+  acctType: ID
+  description: String
+  currencyId: ID
+  subsidiaryId: ID
+  parentId: ID
+}
+
+input CustomerInput {
+  entityId: String
+  companyName: String
+  firstName: String
+  lastName: String
+  email: String
+  phone: String
+  subsidiaryId: ID
+  currencyId: ID
+  creditLimit: Decimal
+}
+
+input VendorInput {
+  entityId: String
+  companyName: String
+  email: String
+  phone: String
+  subsidiaryId: ID
+  currencyId: ID
+  termsId: ID
+}
+
+input InvoiceInput {
+  entityId: ID!
+  tranDate: Date
+  currencyId: ID
+  termsId: ID
+  memo: String
+}
+
+input SalesOrderInput {
+  entityId: ID!
+  tranDate: Date
+  currencyId: ID
+  shipDate: Date
+  memo: String
+}
+
+input PurchaseOrderInput {
+  entityId: ID!
+  tranDate: Date
+  currencyId: ID
+  expectedCloseDate: Date
+  memo: String
+}
+
+type Mutation {
+  # Accounts
+  createAccount(input: AccountInput!): Account
+  updateAccount(id: ID!, input: AccountInput!): Account
+  deleteAccount(id: ID!): Boolean
+
+  # Customers
+  createCustomer(input: CustomerInput!): Customer
+  updateCustomer(id: ID!, input: CustomerInput!): Customer
+  deleteCustomer(id: ID!): Boolean
+
+  # Vendors
+  createVendor(input: VendorInput!): Vendor
+  updateVendor(id: ID!, input: VendorInput!): Vendor
+  deleteVendor(id: ID!): Boolean
+
+  # Invoices
+  createInvoice(input: InvoiceInput!): Invoice
+  updateInvoice(id: ID!, input: InvoiceInput!): Invoice
+  deleteInvoice(id: ID!): Boolean
+
+  # Sales Orders
+  createSalesOrder(input: SalesOrderInput!): SalesOrder
+  updateSalesOrder(id: ID!, input: SalesOrderInput!): SalesOrder
+  deleteSalesOrder(id: ID!): Boolean
+
+  # Purchase Orders
+  createPurchaseOrder(input: PurchaseOrderInput!): PurchaseOrder
+  updatePurchaseOrder(id: ID!, input: PurchaseOrderInput!): PurchaseOrder
+  deletePurchaseOrder(id: ID!): Boolean
+
+  # Journal Entries
+  createJournalEntry(tranDate: Date, subsidiaryId: ID, memo: String): JournalEntry
+  updateJournalEntry(id: ID!, memo: String): JournalEntry
+  deleteJournalEntry(id: ID!): Boolean
+
+  # Work Orders
+  createWorkOrder(assemblyItemId: ID!, quantity: Decimal, locationId: ID): WorkOrder
+  updateWorkOrder(id: ID!, status: String, quantity: Decimal): WorkOrder
+  deleteWorkOrder(id: ID!): Boolean
+
+  # Expense Reports
+  createExpenseReport(employeeId: ID!, tranDate: Date, memo: String): ExpenseReport
+  updateExpenseReport(id: ID!, status: String, memo: String): ExpenseReport
+  deleteExpenseReport(id: ID!): Boolean
+
+  # Projects
+  createProject(entityId: String!, customerId: ID, startDate: Date, endDate: Date): Project
+  updateProject(id: ID!, status: String, endDate: Date): Project
+  deleteProject(id: ID!): Boolean
+
+  # Item Fulfillments
+  createItemFulfillment(salesOrderId: ID!, shipDate: Date, locationId: ID): ItemFulfillment
+  updateItemFulfillment(id: ID!, trackingNumber: String, status: String): ItemFulfillment
+
+  # Transfer Orders
+  createTransferOrder(fromLocationId: ID!, toLocationId: ID!, expectedReceiptDate: Date): TransferOrder
+  updateTransferOrder(id: ID!, status: String): TransferOrder
+  deleteTransferOrder(id: ID!): Boolean
+}
