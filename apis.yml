@@ -61,6 +61,8 @@ apis:
   - type: Documentation
     url: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html
 common:
+- type: DomainSecurity
+  url: security/oracle-netsuite-domain-security.yml
 - type: GitHubOrganization
   url: https://github.com/oracle
 - type: LinkedIn
