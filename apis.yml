@@ -7,7 +7,18 @@ description: Oracle NetSuite is a cloud-based ERP suite covering financials, acc
   SuiteTalk REST Web Services API for record access and SuiteQL queries, secured via
   OAuth 2.0 issued by each customer account-specific suitetalk.api.netsuite.com endpoint.
 type: Index
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+accessModel:
+  pricing: unknown
+  onboarding: unknown
+  trial: false
+  try_now: false
+  public: false
+  label: Unknown
+  confidence: low
+  source: []
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/oracle-netsuite.png
 tags:
 - ERP
 - Financials
