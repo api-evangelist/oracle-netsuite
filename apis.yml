@@ -25,6 +25,14 @@ tags:
 - Accounting
 - CRM
 - Inventory
+- Software-as-a-Service
+- Oracle
+tags_raw:
+- ERP
+- Financials
+- Accounting
+- CRM
+- Inventory
 - SaaS
 - Oracle
 url: https://raw.githubusercontent.com/api-evangelist/oracle-netsuite/refs/heads/main/apis.yml
@@ -41,6 +49,13 @@ apis:
   humanURL: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/book_1559132836.html
   baseURL: https://{accountId}.suitetalk.api.netsuite.com/services/rest/record/v1
   tags:
+  - ERP
+  - Records
+  - Customers
+  - Invoices
+  - Sales Orders
+  - Authentication
+  tags_raw:
   - ERP
   - Records
   - Customers
